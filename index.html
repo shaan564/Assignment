@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Item Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(120deg, #f0f4f8 0%, #e0e7ef 100%);
+            min-height: 100vh;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+        nav {
+            background: linear-gradient(90deg, #222b45 60%, #ffd700 120%);
+            color: #fff;
+            padding: 1.2em 2em;
+            display: flex;
+            gap: 2em;
+            box-shadow: 0 2px 16px rgba(34,43,69,0.12);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: color 0.2s, border-bottom 0.2s;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            font-size: 1.1em;
+        }
+        nav a:hover {
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+            background: rgba(255, 215, 0, 0.08);
+            border-radius: 4px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2.5em auto;
+            background: #fff;
+            padding: 2.5em 2em;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(34,43,69,0.13);
+            position: relative;
+            overflow: hidden;
+        }
+        .container:before {
+            content: "";
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, #ffd70033 60%, transparent 100%);
+            z-index: 0;
+        }
+        h2 {
+            color: #222b45;
+            margin-bottom: 1.2em;
+            letter-spacing: 0.5px;
+            font-size: 2em;
+            font-weight: 700;
+            text-shadow: 0 2px 8px #ffd70022;
+            z-index: 1;
+            position: relative;
+        }
+        .item-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2em;
+            z-index: 1;
+            position: relative;
+        }
+        .item-card {
+            background: linear-gradient(120deg, #f7fafc 80%, #fffbe7 100%);
+            border-radius: 14px;
+            padding: 1.2em 1em 1em 1em;
+            width: 200px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(34,43,69,0.10);
+            transition: transform 0.18s, box-shadow 0.18s;
+            border: 1.5px solid #e3e8ee;
+            position: relative;
+            overflow: hidden;
+        }
+        .item-card:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 8px 32px rgba(255,215,0,0.13);
+            border-color: #ffd700;
+            background: linear-gradient(120deg, #fffde7 80%, #fffbe7 100%);
+        }
+        .item-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 0.7em;
+            box-shadow: 0 2px 12px rgba(34,43,69,0.10);
+            border: 2px solid #ffd70022;
+            background: #fff;
+        }
+        form label {
+            display: block;
+            margin-bottom: 1em;
+            color: #222b45;
+            font-weight: 500;
+            font-size: 1.08em;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.8em;
+            border: 1.5px solid #cfd8dc;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 0.3em;
+            background: #f7fafc;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 4px #ffd70011;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border: 2px solid #ffd700;
+            outline: none;
+            background: #fffde7;
+            box-shadow: 0 2px 8px #ffd70022;
+        }
+        input[type="file"] {
+            margin-top: 0.3em;
+            font-size: 1em;
+        }
+        button, .modal-content button {
+            background: linear-gradient(90deg, #ffd700 0%, #ffb300 100%);
+            color: #222b45;
+            border: none;
+            padding: 0.8em 1.7em;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.08em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(34,43,69,0.08);
+            margin-top: 1em;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            letter-spacing: 0.5px;
+        }
+        button:hover, .modal-content button:hover {
+            background: linear-gradient(90deg, #ffb300 0%, #ffd700 100%);
+            color: #111;
+            box-shadow: 0 4px 16px #ffd70044;
+        }
+        .success {
+            color: #388e3c;
+            background: #e8f5e9;
+            border-left: 5px solid #388e3c;
+            padding: 0.7em 1em;
+            border-radius: 8px;
+            margin-bottom: 1em;
+            font-weight: 500;
+            font-size: 1.08em;
+            box-shadow: 0 2px 8px #388e3c11;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(34,43,69,0.25);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: #fff;
+            padding: 2.5em 2em 2em 2em;
+            border-radius: 18px;
+            max-width: 540px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 12px 48px rgba(34,43,69,0.18);
+            animation: modalIn 0.25s;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .close {
+            position: absolute;
+            top: 1.2em;
+            right: 1.2em;
+            cursor: pointer;
+            font-size: 2em;
+            color: #888;
+            transition: color 0.2s;
+            z-index: 2;
+        }
+        .close:hover {
+            color: #ffb300;
+        }
+        .carousel {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            margin-bottom: 1em;
+            justify-content: center;
+        }
+        .carousel img {
+            width: 320px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(34,43,69,0.13);
+            border: 2px solid #ffd70022;
+            background: #fff;
+        }
+        .carousel button {
+            padding: 0.5em 1em;
+            font-size: 1em;
+            background: #e0e7ef;
+            color: #222b45;
+            border: none;
+            border-radius: 6px;
+            box-shadow: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .carousel button:hover {
+            background: #ffd700;
+            color: #222b45;
+        }
+        #enquireMsg {
+            color: #1976d2;
+            background: #e3f2fd;
+            border-left: 5px solid #1976d2;
+            padding: 0.7em 1em;
+            border-radius: 8px;
+            margin-top: 1em;
+            font-weight: 500;
+            font-size: 1.08em;
+            box-shadow: 0 2px 8px #1976d211;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 1em; }
+            .item-list { flex-direction: column; }
+            .item-card { width: 100%; }
+            .carousel img { width: 100%; height: 150px; }
+            .modal-content { padding: 1.2em; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" id="viewItemsTab">View Items</a>
+        <a href="#" id="addItemsTab">Add Item</a>
+    </nav>
+    <div class="container" id="viewItemsPage">
+        <h2>View Items</h2>
+        <div class="item-list" id="itemList"></div>
+    </div>
+    <div class="container" id="addItemsPage" style="display:none;">
+        <h2>Add Item</h2>
+        <div id="successMsg" style="display:none;" class="success">Item successfully added</div>
+        <form id="addItemForm" autocomplete="off">
+            <label>
+                Item Name
+                <input type="text" id="itemName" required>
+            </label>
+            <label>
+                Item Type
+                <input type="text" id="itemType" placeholder="Shirt, Pant, Shoes, Sports Gear, etc." required>
+            </label>
+            <label>
+                Item Description
+                <textarea id="itemDesc" rows="3" required></textarea>
+            </label>
+            <label>
+                Item Cover Image
+                <input type="file" id="itemCover" accept="image/*" required>
+            </label>
+            <label>
+                Item Additional Images
+                <input type="file" id="itemImages" accept="image/*" multiple>
+            </label>
+            <button type="submit">Add Item</button>
+        </form>
+    </div>
+
+    <!-- Modal for item details -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 id="modalItemName"></h2>
+            <div class="carousel" id="modalCarousel"></div>
+            <div style="margin-bottom:1em;">
+                <strong>Type:</strong> <span id="modalItemType"></span><br>
+                <strong>Description:</strong>
+                <div id="modalItemDesc" style="margin-top:0.5em;"></div>
+            </div>
+            <button id="enquireBtn">Enquire</button>
+            <div id="enquireMsg" style="display:none;">Thank you for your enquiry! We'll get back to you soon.</div>
+        </div>
+    </div>
+
+    <script>
+        // Static initial items
+        let items = [
+            {
+                name: "Classic White Shirt",
+                type: "Shirt",
+                desc: "A timeless white shirt for all occasions.",
+                cover: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
+                images: [
+                    "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
+                    "https://images.unsplash.com/photo-1526178613658-3f1622045557?auto=format&fit=crop&w=400&q=80"
+                ]
+            },
+            {
+                name: "Running Shoes",
+                type: "Shoes",
+                desc: "Lightweight and comfortable running shoes.",
+                cover:"https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cnVubmluZyUyMHNob2VzfGVufDB8fDB8fHww",
+                images: [
+                    "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cnVubmluZyUyMHNob2VzfGVufDB8fDB8fHww",
+                    "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cnVubmluZyUyMHNob2VzfGVufDB8fDB8fHww"
+                ]
+            }
+        ];
+
+        // Navigation
+        const viewItemsTab = document.getElementById('viewItemsTab');
+        const addItemsTab = document.getElementById('addItemsTab');
+        const viewItemsPage = document.getElementById('viewItemsPage');
+        const addItemsPage = document.getElementById('addItemsPage');
+
+        viewItemsTab.onclick = function() {
+            viewItemsPage.style.display = '';
+            addItemsPage.style.display = 'none';
+            viewItemsTab.style.borderBottom = "2px solid #ffd700";
+            addItemsTab.style.borderBottom = "2px solid transparent";
+        };
+        addItemsTab.onclick = function() {
+            viewItemsPage.style.display = 'none';
+            addItemsPage.style.display = '';
+            addItemsTab.style.borderBottom = "2px solid #ffd700";
+            viewItemsTab.style.borderBottom = "2px solid transparent";
+        };
+
+        // Render items
+        function renderItems() {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+            items.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <img src="${item.cover}" alt="${item.name}">
+                    <div style="font-weight:600; font-size:1.1em; margin-bottom:0.3em;">${item.name}</div>
+                `;
+                card.onclick = () => openModal(idx);
+                itemList.appendChild(card);
+            });
+        }
+        renderItems();
+
+        // Add item form
+        document.getElementById('addItemForm').onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value.trim();
+            const type = document.getElementById('itemType').value.trim();
+            const desc = document.getElementById('itemDesc').value.trim();
+            const coverInput = document.getElementById('itemCover');
+            const imagesInput = document.getElementById('itemImages');
+
+            if (!coverInput.files[0]) return;
+
+            // Read cover image
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const cover = ev.target.result;
+                // Read additional images
+                let images = [cover];
+                let files = Array.from(imagesInput.files);
+                if (files.length) {
+                    let loaded = 0;
+                    files.forEach((file, i) => {
+                        const imgReader = new FileReader();
+                        imgReader.onload = function(evv) {
+                            images.push(evv.target.result);
+                            loaded++;
+                            if (loaded === files.length) {
+                                addItem(name, type, desc, cover, images);
+                            }
+                        };
+                        imgReader.readAsDataURL(file);
+                    });
+                } else {
+                    addItem(name, type, desc, cover, images);
+                }
+            };
+            reader.readAsDataURL(coverInput.files[0]);
+        };
+
+        function addItem(name, type, desc, cover, images) {
+            items.push({ name, type, desc, cover, images });
+            renderItems();
+            document.getElementById('addItemForm').reset();
+            document.getElementById('successMsg').style.display = '';
+            setTimeout(() => {
+                document.getElementById('successMsg').style.display = 'none';
+            }, 2000);
+        }
+
+        // Modal logic
+        const modal = document.getElementById('itemModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        let currentImages = [];
+        let currentImgIdx = 0;
+
+        function openModal(idx) {
+            const item = items[idx];
+            document.getElementById('modalItemName').textContent = item.name;
+            document.getElementById('modalItemType').textContent = item.type;
+            document.getElementById('modalItemDesc').textContent = item.desc;
+            currentImages = item.images;
+            currentImgIdx = 0;
+            renderCarousel();
+            document.getElementById('enquireMsg').style.display = 'none';
+            modal.style.display = 'flex';
+        }
+
+        function renderCarousel() {
+            const carousel = document.getElementById('modalCarousel');
+            carousel.innerHTML = '';
+            if (currentImages.length > 1) {
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = '<';
+                prevBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    currentImgIdx = (currentImgIdx - 1 + currentImages.length) % currentImages.length;
+                    renderCarousel();
+                };
+                carousel.appendChild(prevBtn);
+            }
+            const img = document.createElement('img');
+            img.src = currentImages[currentImgIdx];
+            carousel.appendChild(img);
+            if (currentImages.length > 1) {
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = '>';
+                nextBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    currentImgIdx = (currentImgIdx + 1) % currentImages.length;
+                    renderCarousel();
+                };
+                carousel.appendChild(nextBtn);
+            }
+        }
+
+        closeModalBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+        window.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+
+        // Enquire button
+        document.getElementById('enquireBtn').onclick = function() {
+            document.getElementById('enquireMsg').style.display = '';
+            setTimeout(() => {
+                document.getElementById('enquireMsg').style.display = 'none';
+            }, 2500);
+        };
+    </script>
+</body>
+</html>
